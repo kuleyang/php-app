@@ -40,6 +40,9 @@ abstract class Service extends Controller_Abstract
         $this->request_http = new Request_Http();
         $this->output_format = $this->request_http->getPost('format');
         Dispatcher::getInstance()->disableView();
+        $http_raw_content = file_get_contents("php://input");
+        var_dump($http_raw_content);
+        var_dump($this->request_http);
     }
 
     /**
