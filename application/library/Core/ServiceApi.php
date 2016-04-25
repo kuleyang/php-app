@@ -8,7 +8,6 @@ use Yaf\Dispatcher;
 use Yaf\Controller_Abstract;
 use PhpSecure\Crypt\AES;
 use Exception as Exception;
-use Rncryptor\RNDecryptor;
 
 /**
  * Class ServiceApi
@@ -24,60 +23,15 @@ abstract class ServiceApi extends Controller_Abstract
      */
     protected $_output_format;
 
-    /**
-     * 各平台的密钥
-     * @var array
-     */
-    private static $dataKey = array(1=>'nlDF2WVkaRFo1SKSwYmTSQXqqBtt3JO',2=>'yMv5zoSx4waLDj4rdfgf6LSTTGd8exS');
-    /**
-     * 请求参数
-     * @var array
-     */
-    protected $raw;
-    /**
-     * 客户端平台
-     * @var int
-     */
-    protected $osf;
-    /**
-     * 客户端接口版本
-     * @var int
-     */
-    protected $ver;
 
-    /**
-     * 是否加密
-     * @var int 0加密 1不加密
-     */
-    protected $rnc;
 
     /**
      * ServiceApi初始化
      */
     public function init()
     {
-        $http_raw_content = file_get_contents("php://input");
-        $request =  $this->getRequest();
-
-        // if(!($request->getParam('f')&&$request->getParam('v')&&$request->getParam('d')){
-        //     throw new \Exception("Error Processing Request", 1);
-            
-        // }
-        $this->osf = $request->getParam('f');
-        $this->ver = $request->getParam('v');
-        $this->rnc = $request->getParam('d');
-        
-        if ($this->rnc==0&&$this->osf>0) {
-            $cryptor = new RNDecryptor();
-            $raw_data = $cryptor->decrypt($http_raw_content, self::$dataKey[$this->osf]);
-        } else {
-            $raw_data = $http_raw_content;
-        }
-        $this->raw = json_decode($raw_data,TRUE);
         Dispatcher::getInstance()->returnResponse(true);
         Dispatcher::getInstance()->disableView();
-        $this->_output_format = 'json';
-        var_dump($this->raw);
     }
 
     /**

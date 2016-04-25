@@ -38,9 +38,9 @@ class JsonOutput implements OutputInterface
 	 */
 	public function setVariables($variables, $overwrite = false)
 	{
-		if (!is_array($variables) && !$variables instanceof Traversable) {
+		if (!is_array($variables) && !$variables instanceof Traversable && !$variables instanceof \JsonSerializable) {
 			throw new Exception\InvalidArgumentException(sprintf(
-				'%s: expects an array, or Traversable argument; received "%s"', __METHOD__,
+				'%s: expects an array, or Traversable,or JsonSerializable argument; received "%s"', __METHOD__,
 				(is_object($variables) ? get_class($variables) : gettype($variables))
 			));
 		}

@@ -10,7 +10,7 @@ define('ES',            'EXCEPTION-STDERR');
 define('APP_NAME',      'application');
 define('ROOT_PATH',      realpath(dirname(__FILE__).'/../'));
 define('INI_PATH',       ROOT_PATH.DS.'conf'.DS.'app.ini');
-
+error_reporting(E_ALL); 
 /**
  * ASSETS_URL 是资料文件URL
  * BACKEND_URL 是应用URl 指向public

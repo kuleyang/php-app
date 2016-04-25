@@ -14,6 +14,9 @@ use Output\FormatOutput;
 use PhpSecure\Crypt\AES;
 use Console\Console;
 
+use Rncryptor\RNDecryptor;
+use Bean\ReturnObj;
+
 /**
  * Class Service
  *
@@ -28,21 +31,67 @@ abstract class Service extends Controller_Abstract
      */
     public $output_format;
 
+
+
     /**
-     * @var string
+     * 各平台的密钥
+     * @var array
      */
-    public $request_http;
+    private static $dataKey = array(1=>'nlDF2WVkaRFo1SKSwYmTSQXqqBtt3JO',2=>'yMv5zoSx4waLDj4rdfgf6LSTTGd8exS');
+    /**
+     * 请求参数
+     * @var array
+     */
+    protected $raw;
+    /**
+     * 客户端平台
+     * @var int
+     */
+    protected $osf;
+    /**
+     * 客户端接口版本
+     * @var int
+     */
+    protected $ver;
+
+    /**
+     * 是否加密
+     * @var int 0加密 1不加密
+     */
+    protected $rnc;
+
+
+    /**
+     * 业务成功
+     * @var int
+     */
+    const ERR_CODE_SUCCESS    = 0;
+    /**
+     * 业务失败
+     * @var int
+     */
+    const ERR_CODE_FAILD      = 1;
 
     /**
      * Service初始化
      */
     public function init() {
-        $this->request_http = new Request_Http();
-        $this->output_format = $this->request_http->getPost('format');
-        Dispatcher::getInstance()->disableView();
+        $this->output_format = 'json';
         $http_raw_content = file_get_contents("php://input");
-        var_dump($http_raw_content);
-        var_dump($this->request_http);
+        $request =  $this->getRequest();
+
+        $this->osf = $request->getParam('f');
+        $this->ver = $request->getParam('v');
+        $this->rnc = $request->getParam('d');
+        
+        if ($this->rnc==0&&$this->osf>0) {
+            $cryptor = new RNDecryptor();
+            $raw_data = $cryptor->decrypt($http_raw_content, self::$dataKey[$this->osf]);
+        } else {
+            $raw_data = $http_raw_content;
+        }
+        $this->raw = json_decode($raw_data,TRUE);
+        Dispatcher::getInstance()->disableView();
     }
 
     /**
@@ -129,5 +178,23 @@ abstract class Service extends Controller_Abstract
         }
         $sender->setStatus($code);
         $sender->send();
+    }
+
+
+    protected function sendSuccess($data){
+        $this->sendData($data,self::ERR_CODE_SUCCESS);
+    }
+
+    protected function sendSuccessMsg($data,$msg){
+        $this->sendData($data,self::ERR_CODE_SUCCESS,$msg);
+    }
+    protected function sendData($data,$code,$msg=''){
+        $returnObj = new ReturnObj($data,$code,$msg);
+        // var_dump(json_encode($returnObj));
+        $this->sendHttpOutput($returnObj);
+    }
+
+    protected function sendError($msg,$code=self::ERR_CODE_FAILD){
+        $this->sendData(array(),self::ERR_CODE_FAILD,$msg);
     }
 }
